@@ -5,7 +5,7 @@ struct DetailView: View {
     let item: FeedItem
     @State private var isShowingOriginalContent = false
     @EnvironmentObject var feedManager: FeedManager
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
@@ -14,9 +14,9 @@ struct DetailView: View {
                     Text(item.title)
                         .font(.title)
                         .fontWeight(.bold)
-                    
+
                     Spacer()
-                    
+
                     Button {
                         toggleStarred()
                     } label: {
@@ -25,31 +25,31 @@ struct DetailView: View {
                     }
                     .buttonStyle(.plain)
                 }
-                
+
                 HStack {
                     if let feedTitle = item.feedTitle {
                         Text(feedTitle)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
-                    
+
                     Spacer()
-                    
+
                     Text(item.formattedDate)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
-                
+
                 if let author = item.author, !author.isEmpty {
                     Text("By \(author)")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
-                
+
                 Divider()
             }
             .padding()
-            
+
             // Content
             if isShowingOriginalContent {
                 WebViewContainer(url: item.url)
@@ -80,9 +80,10 @@ struct DetailView: View {
                                 }
                             }
                         }
-                        
-                        Text(item.content)
-                            .lineSpacing(1.5)
+
+                        // Use HTMLContentView to render HTML content
+                        HTMLContentView(htmlContent: item.content, baseURL: item.url)
+                            .frame(minHeight: 300)
                     }
                     .padding()
                 }
@@ -99,7 +100,7 @@ struct DetailView: View {
                     )
                 }
             }
-            
+
             ToolbarItem {
                 Button {
                     if let url = item.url {
@@ -109,7 +110,7 @@ struct DetailView: View {
                     Label("Open in Browser", systemImage: "safari")
                 }
             }
-            
+
             ToolbarItem {
                 Button {
                     shareItem()
@@ -122,20 +123,20 @@ struct DetailView: View {
             markAsRead()
         }
     }
-    
+
     private func markAsRead() {
         feedManager.markAsRead(item: item)
     }
-    
+
     private func toggleStarred() {
         feedManager.toggleStarred(item: item)
     }
-    
+
     private func shareItem() {
         guard let url = item.url else { return }
-        
+
         let picker = NSSharingServicePicker(items: [url])
-        
+
         if let window = NSApplication.shared.windows.first {
             picker.show(relativeTo: .zero, of: window.contentView!, preferredEdge: .minY)
         }
@@ -144,24 +145,24 @@ struct DetailView: View {
 
 struct WebViewContainer: NSViewRepresentable {
     let url: URL?
-    
+
     func makeNSView(context: Context) -> WKWebView {
         let webView = WKWebView()
         webView.navigationDelegate = context.coordinator
         return webView
     }
-    
+
     func updateNSView(_ webView: WKWebView, context: Context) {
         if let url = url {
             let request = URLRequest(url: url)
             webView.load(request)
         }
     }
-    
+
     func makeCoordinator() -> Coordinator {
         Coordinator()
     }
-    
+
     class Coordinator: NSObject, WKNavigationDelegate {
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             // Handle navigation completion if needed
