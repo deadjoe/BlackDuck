@@ -17,6 +17,7 @@
 		3B3B3B3B3B3B3B3B3B3B3B3B /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B4B4B4B4B4B4B4B4B4B4B4B /* DetailView.swift */; };
 		3C3C3C3C3C3C3C3C3C3C3C3C /* FeedItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C4C4C4C4C4C4C4C4C4C4C4C /* FeedItemView.swift */; };
 		3D3D3D3D3D3D3D3D3D3D3D3D /* WebContentParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D4D4D4D4D4D4D4D4D4D4D4D /* WebContentParser.swift */; };
+		3E3E3E3E3E3E3E3E3E3E3E3E /* HTMLContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E4E4E4E4E4E4E4E4E4E4E4E /* HTMLContentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +32,7 @@
 		4B4B4B4B4B4B4B4B4B4B4B4B /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 		4C4C4C4C4C4C4C4C4C4C4C4C /* FeedItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedItemView.swift; sourceTree = "<group>"; };
 		4D4D4D4D4D4D4D4D4D4D4D4D /* WebContentParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebContentParser.swift; sourceTree = "<group>"; };
+		4E4E4E4E4E4E4E4E4E4E4E4E /* HTMLContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLContentView.swift; sourceTree = "<group>"; };
 		5A5A5A5A5A5A5A5A5A5A5A5A /* BlackDuck.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BlackDuck.entitlements; sourceTree = "<group>"; };
 		5B5B5B5B5B5B5B5B5B5B5B5B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -93,6 +95,7 @@
 				4A4A4A4A4A4A4A4A4A4A4A4A /* SidebarView.swift */,
 				4B4B4B4B4B4B4B4B4B4B4B4B /* DetailView.swift */,
 				4C4C4C4C4C4C4C4C4C4C4C4C /* FeedItemView.swift */,
+				4E4E4E4E4E4E4E4E4E4E4E4E /* HTMLContentView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -198,6 +201,7 @@
 				3B3B3B3B3B3B3B3B3B3B3B3B /* DetailView.swift in Sources */,
 				3C3C3C3C3C3C3C3C3C3C3C3C /* FeedItemView.swift in Sources */,
 				3D3D3D3D3D3D3D3D3D3D3D3D /* WebContentParser.swift in Sources */,
+				3E3E3E3E3E3E3E3E3E3E3E3E /* HTMLContentView.swift in Sources */,
 				1C1C1C1C1C1C1C1C1C1C1C1C /* BlackDuckApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
