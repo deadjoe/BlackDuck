@@ -134,6 +134,16 @@ class WebContentParser {
                     contentHtml = String(itemContent[contentRange])
                 }
 
+                // Remove CDATA sections
+                let cdataPattern = "<!\\[CDATA\\[(.*?)\\]\\]>"
+                let cdataRegex = try NSRegularExpression(pattern: cdataPattern, options: [.dotMatchesLineSeparators])
+                let cdataMatches = cdataRegex.matches(in: contentHtml, range: NSRange(contentHtml.startIndex..., in: contentHtml))
+
+                if let cdataMatch = cdataMatches.first,
+                   let cdataRange = Range(cdataMatch.range(at: 1), in: contentHtml) {
+                    contentHtml = String(contentHtml[cdataRange])
+                }
+
                 // Clean up HTML entities in the content
                 contentHtml = contentHtml.replacingOccurrences(of: "&lt;", with: "<")
                     .replacingOccurrences(of: "&gt;", with: ">")
@@ -215,11 +225,24 @@ class WebContentParser {
                     imageURL = url
                 }
 
+                // Clean up HTML entities in title and description
+                let cleanTitle = itemTitle.replacingOccurrences(of: "&lt;", with: "<")
+                    .replacingOccurrences(of: "&gt;", with: ">")
+                    .replacingOccurrences(of: "&amp;", with: "&")
+                    .replacingOccurrences(of: "&quot;", with: "\"")
+                    .replacingOccurrences(of: "&apos;", with: "'")
+
+                let cleanDescription = itemDescription.replacingOccurrences(of: "&lt;", with: "<")
+                    .replacingOccurrences(of: "&gt;", with: ">")
+                    .replacingOccurrences(of: "&amp;", with: "&")
+                    .replacingOccurrences(of: "&quot;", with: "\"")
+                    .replacingOccurrences(of: "&apos;", with: "'")
+
                 let feedItem = FeedItem(
                     feedID: feedID,
                     feedTitle: feedTitle,
-                    title: itemTitle,
-                    description: itemDescription,
+                    title: cleanTitle,
+                    description: cleanDescription,
                     content: contentHtml,
                     url: itemURL,
                     author: author,
