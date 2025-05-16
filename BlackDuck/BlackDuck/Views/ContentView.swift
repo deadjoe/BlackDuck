@@ -9,13 +9,6 @@ struct ContentView: View {
     @State private var newFeedURL = ""
 
     var body: some View {
-        // Setup notification observers for feed item actions
-        .onAppear {
-            setupNotificationObservers()
-        }
-        .onDisappear {
-            removeNotificationObservers()
-        }
         NavigationSplitView {
             SidebarView(selectedFeed: $selectedFeed)
                 .environmentObject(feedManager)
@@ -60,6 +53,63 @@ struct ContentView: View {
             AddFeedView(isPresented: $isAddingFeed)
                 .environmentObject(feedManager)
         }
+        .onAppear {
+            setupNotificationObservers()
+        }
+        .onDisappear {
+            removeNotificationObservers()
+        }
+    }
+
+    // Setup notification observers for feed item actions
+    private func setupNotificationObservers() {
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("ToggleReadStatus"),
+            object: nil,
+            queue: .main
+        ) { notification in
+            if let item = notification.userInfo?["item"] as? FeedItem {
+                toggleReadStatus(item: item)
+            }
+        }
+
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("ToggleStarredStatus"),
+            object: nil,
+            queue: .main
+        ) { notification in
+            if let item = notification.userInfo?["item"] as? FeedItem {
+                toggleStarredStatus(item: item)
+            }
+        }
+    }
+
+    private func removeNotificationObservers() {
+        NotificationCenter.default.removeObserver(
+            self,
+            name: NSNotification.Name("ToggleReadStatus"),
+            object: nil
+        )
+
+        NotificationCenter.default.removeObserver(
+            self,
+            name: NSNotification.Name("ToggleStarredStatus"),
+            object: nil
+        )
+    }
+
+    private func toggleReadStatus(item: FeedItem) {
+        if item.isRead {
+            // If it's already read, mark as unread
+            feedManager.markAsUnread(item: item)
+        } else {
+            // Mark as read
+            feedManager.markAsRead(item: item)
+        }
+    }
+
+    private func toggleStarredStatus(item: FeedItem) {
+        feedManager.toggleStarred(item: item)
     }
 
     private var filteredItems: [FeedItem] {

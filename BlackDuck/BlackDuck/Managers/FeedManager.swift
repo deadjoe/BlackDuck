@@ -118,6 +118,16 @@ class FeedManager: ObservableObject {
         saveFeedsToDisk()
     }
 
+    func markAsUnread(item: FeedItem) {
+        guard let feedIndex = feeds.firstIndex(where: { $0.id == item.feedID }),
+              let itemIndex = feeds[feedIndex].items.firstIndex(where: { $0.id == item.id }) else {
+            return
+        }
+
+        feeds[feedIndex].items[itemIndex].isRead = false
+        saveFeedsToDisk()
+    }
+
     func toggleStarred(item: FeedItem) {
         guard let feedIndex = feeds.firstIndex(where: { $0.id == item.feedID }),
               let itemIndex = feeds[feedIndex].items.firstIndex(where: { $0.id == item.id }) else {
@@ -164,7 +174,7 @@ class FeedManager: ObservableObject {
         }
     }
 
-    private func saveFeedsToDisk() {
+    func saveFeedsToDisk() {
         do {
             let data = try JSONEncoder().encode(feeds)
             userDefaults.set(data, forKey: feedsKey)

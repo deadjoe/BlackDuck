@@ -145,11 +145,7 @@ class WebContentParser {
                 }
 
                 // Clean up HTML entities in the content
-                contentHtml = contentHtml.replacingOccurrences(of: "&lt;", with: "<")
-                    .replacingOccurrences(of: "&gt;", with: ">")
-                    .replacingOccurrences(of: "&amp;", with: "&")
-                    .replacingOccurrences(of: "&quot;", with: "\"")
-                    .replacingOccurrences(of: "&apos;", with: "'")
+                contentHtml = decodeHTMLEntities(contentHtml)
 
                 // Extract item link
                 let linkPattern = "<link>(.*?)</link>"
@@ -226,17 +222,8 @@ class WebContentParser {
                 }
 
                 // Clean up HTML entities in title and description
-                let cleanTitle = itemTitle.replacingOccurrences(of: "&lt;", with: "<")
-                    .replacingOccurrences(of: "&gt;", with: ">")
-                    .replacingOccurrences(of: "&amp;", with: "&")
-                    .replacingOccurrences(of: "&quot;", with: "\"")
-                    .replacingOccurrences(of: "&apos;", with: "'")
-
-                let cleanDescription = itemDescription.replacingOccurrences(of: "&lt;", with: "<")
-                    .replacingOccurrences(of: "&gt;", with: ">")
-                    .replacingOccurrences(of: "&amp;", with: "&")
-                    .replacingOccurrences(of: "&quot;", with: "\"")
-                    .replacingOccurrences(of: "&apos;", with: "'")
+                let cleanTitle = decodeHTMLEntities(itemTitle)
+                let cleanDescription = decodeHTMLEntities(itemDescription)
 
                 let feedItem = FeedItem(
                     feedID: feedID,
@@ -278,5 +265,54 @@ class WebContentParser {
         // Simplified implementation for HTML pages
         // In a real app, you would use a proper HTML parser
         throw ParserError.unsupportedFormat
+    }
+
+    // Helper method to decode HTML entities
+    private func decodeHTMLEntities(_ text: String) -> String {
+        var decodedText = text
+
+        // Common HTML entities
+        let entities: [String: String] = [
+            "&lt;": "<",
+            "&gt;": ">",
+            "&amp;": "&",
+            "&quot;": "\"",
+            "&apos;": "'",
+            "&nbsp;": " ",
+            "&copy;": "©",
+            "&reg;": "®",
+            "&trade;": "™",
+            "&mdash;": "—",
+            "&ndash;": "–",
+            "&lsquo;": "'",
+            "&rsquo;": "'",
+            "&ldquo;": """,
+            "&rdquo;": """,
+            "&bull;": "•",
+            "&hellip;": "…"
+        ]
+
+        // Replace each entity with its corresponding character
+        for (entity, character) in entities {
+            decodedText = decodedText.replacingOccurrences(of: entity, with: character)
+        }
+
+        // Handle numeric entities (e.g., &#39; for apostrophe)
+        let numericPattern = "&#(\\d+);"
+        if let regex = try? NSRegularExpression(pattern: numericPattern) {
+            let matches = regex.matches(in: decodedText, range: NSRange(decodedText.startIndex..., in: decodedText))
+
+            // Process matches in reverse order to avoid index issues when replacing
+            for match in matches.reversed() {
+                if let range = Range(match.range, in: decodedText),
+                   let codeRange = Range(match.range(at: 1), in: decodedText),
+                   let code = Int(decodedText[codeRange]),
+                   let scalar = UnicodeScalar(code) {
+                    decodedText = decodedText.replacingCharacters(in: range, with: String(Character(scalar)))
+                }
+            }
+        }
+
+        return decodedText
     }
 }

@@ -57,6 +57,7 @@ struct HTMLContentView: NSViewRepresentable {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src * data:; style-src 'self' 'unsafe-inline'; script-src 'none';">
             <style>
                 body {
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -93,6 +94,8 @@ struct HTMLContentView: NSViewRepresentable {
                     max-width: 100%;
                     height: auto;
                     border-radius: 4px;
+                    display: block;
+                    margin: 1em auto;
                 }
 
                 pre, code {
@@ -121,6 +124,40 @@ struct HTMLContentView: NSViewRepresentable {
                         border-left-color: #555;
                         color: #bbb;
                     }
+                }
+
+                table {
+                    border-collapse: collapse;
+                    width: 100%;
+                    margin: 1em 0;
+                }
+
+                th, td {
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                    text-align: left;
+                }
+
+                @media (prefers-color-scheme: dark) {
+                    th, td {
+                        border-color: #555;
+                    }
+                }
+
+                th {
+                    background-color: #f5f5f5;
+                }
+
+                @media (prefers-color-scheme: dark) {
+                    th {
+                        background-color: #333;
+                    }
+                }
+
+                /* Fix for common RSS feed issues */
+                iframe, video {
+                    max-width: 100%;
+                    height: auto;
                 }
             </style>
         </head>
