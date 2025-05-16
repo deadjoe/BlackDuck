@@ -3,7 +3,7 @@ import SwiftUI
 struct SidebarView: View {
     @EnvironmentObject var feedManager: FeedManager
     @Binding var selectedFeed: Feed?
-    
+
     var body: some View {
         List(selection: $selectedFeed) {
             Section("All Feeds") {
@@ -18,11 +18,11 @@ struct SidebarView: View {
                                 Image(systemName: "globe")
                                     .frame(width: 16, height: 16)
                             }
-                            
+
                             Text(feed.title)
-                            
+
                             Spacer()
-                            
+
                             if feed.unreadCount > 0 {
                                 Text("\(feed.unreadCount)")
                                     .font(.caption)
@@ -37,7 +37,7 @@ struct SidebarView: View {
                     .tag(feed)
                 }
             }
-            
+
             Section("Categories") {
                 ForEach(feedManager.categories, id: \.self) { category in
                     NavigationLink {
@@ -48,7 +48,7 @@ struct SidebarView: View {
                     }
                 }
             }
-            
+
             Section("Smart Feeds") {
                 NavigationLink {
                     SmartFeedView(title: "Today", filter: { $0.isToday })
@@ -56,14 +56,14 @@ struct SidebarView: View {
                 } label: {
                     Label("Today", systemImage: "calendar")
                 }
-                
+
                 NavigationLink {
                     SmartFeedView(title: "Unread", filter: { !$0.isRead })
                         .environmentObject(feedManager)
                 } label: {
                     Label("Unread", systemImage: "circle")
                 }
-                
+
                 NavigationLink {
                     SmartFeedView(title: "Starred", filter: { $0.isStarred })
                         .environmentObject(feedManager)
@@ -80,7 +80,7 @@ struct CategoryView: View {
     @EnvironmentObject var feedManager: FeedManager
     let category: String
     @State private var selectedFeed: Feed?
-    
+
     var body: some View {
         List(selection: $selectedFeed) {
             ForEach(feedsInCategory) { feed in
@@ -94,7 +94,7 @@ struct CategoryView: View {
                             Image(systemName: "globe")
                                 .frame(width: 16, height: 16)
                         }
-                        
+
                         Text(feed.title)
                     }
                 }
@@ -103,7 +103,7 @@ struct CategoryView: View {
         }
         .navigationTitle(category)
     }
-    
+
     private var feedsInCategory: [Feed] {
         feedManager.feeds.filter { $0.category == category }
     }
@@ -114,18 +114,60 @@ struct SmartFeedView: View {
     let title: String
     let filter: (FeedItem) -> Bool
     @State private var selectedItem: FeedItem?
-    
+    @State private var searchText = ""
+
     var body: some View {
-        List(filteredItems, selection: $selectedItem) { item in
-            FeedItemView(item: item)
+        VStack {
+            List(filteredItems, selection: $selectedItem) { item in
+                NavigationLink(value: item) {
+                    FeedItemView(item: item)
+                }
                 .tag(item)
+                .contextMenu {
+                    Button {
+                        if item.isRead {
+                            feedManager.markAsUnread(item: item)
+                        } else {
+                            feedManager.markAsRead(item: item)
+                        }
+                    } label: {
+                        Label(item.isRead ? "Mark as Unread" : "Mark as Read",
+                              systemImage: item.isRead ? "circle" : "checkmark.circle")
+                    }
+
+                    Button {
+                        feedManager.toggleStarred(item: item)
+                    } label: {
+                        Label(item.isStarred ? "Remove Star" : "Star",
+                              systemImage: item.isStarred ? "star.slash" : "star")
+                    }
+                }
+            }
+            .searchable(text: $searchText, prompt: "Search in \(title)")
+
+            if let selectedItem = selectedItem {
+                DetailView(item: selectedItem)
+                    .environmentObject(feedManager)
+            } else {
+                ContentUnavailableView("Select an Item", systemImage: "doc.text")
+            }
         }
         .navigationTitle(title)
     }
-    
+
     private var filteredItems: [FeedItem] {
-        feedManager.feeds.flatMap { feed in
+        let items = feedManager.feeds.flatMap { feed in
             feed.items.filter(filter)
+        }
+
+        if searchText.isEmpty {
+            return items
+        } else {
+            return items.filter { item in
+                item.title.localizedCaseInsensitiveContains(searchText) ||
+                item.description.localizedCaseInsensitiveContains(searchText) ||
+                (item.content.localizedCaseInsensitiveContains(searchText))
+            }
         }
     }
 }

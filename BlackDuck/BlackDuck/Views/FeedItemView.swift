@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FeedItemView: View {
     let item: FeedItem
+    @EnvironmentObject var feedManager: FeedManager
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -69,11 +70,11 @@ struct FeedItemView: View {
         .contextMenu {
             Button {
                 // Toggle read status
-                NotificationCenter.default.post(
-                    name: NSNotification.Name("ToggleReadStatus"),
-                    object: nil,
-                    userInfo: ["item": item]
-                )
+                if item.isRead {
+                    feedManager.markAsUnread(item: item)
+                } else {
+                    feedManager.markAsRead(item: item)
+                }
             } label: {
                 Label(item.isRead ? "Mark as Unread" : "Mark as Read",
                       systemImage: item.isRead ? "circle" : "checkmark.circle")
@@ -81,11 +82,7 @@ struct FeedItemView: View {
 
             Button {
                 // Toggle starred status
-                NotificationCenter.default.post(
-                    name: NSNotification.Name("ToggleStarredStatus"),
-                    object: nil,
-                    userInfo: ["item": item]
-                )
+                feedManager.toggleStarred(item: item)
             } label: {
                 Label(item.isStarred ? "Remove Star" : "Star",
                       systemImage: item.isStarred ? "star.slash" : "star")

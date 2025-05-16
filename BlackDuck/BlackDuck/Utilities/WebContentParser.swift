@@ -113,10 +113,12 @@ class WebContentParser {
                 let descRegex = try NSRegularExpression(pattern: descPattern, options: [.dotMatchesLineSeparators])
                 let descMatches = descRegex.matches(in: itemContent, range: NSRange(itemContent.startIndex..., in: itemContent))
 
-                let itemDescription: String
+                var itemDescription: String
                 if let descMatch = descMatches.first,
                    let descRange = Range(descMatch.range(at: 1), in: itemContent) {
                     itemDescription = String(itemContent[descRange])
+                    // Remove CDATA sections from description
+                    itemDescription = removeCDATATags(from: itemDescription)
                 } else {
                     itemDescription = "No description available"
                 }
@@ -134,15 +136,8 @@ class WebContentParser {
                     contentHtml = String(itemContent[contentRange])
                 }
 
-                // Remove CDATA sections
-                let cdataPattern = "<!\\[CDATA\\[(.*?)\\]\\]>"
-                let cdataRegex = try NSRegularExpression(pattern: cdataPattern, options: [.dotMatchesLineSeparators])
-                let cdataMatches = cdataRegex.matches(in: contentHtml, range: NSRange(contentHtml.startIndex..., in: contentHtml))
-
-                if let cdataMatch = cdataMatches.first,
-                   let cdataRange = Range(cdataMatch.range(at: 1), in: contentHtml) {
-                    contentHtml = String(contentHtml[cdataRange])
-                }
+                // Remove CDATA sections from content
+                contentHtml = removeCDATATags(from: contentHtml)
 
                 // Clean up HTML entities in the content
                 contentHtml = decodeHTMLEntities(contentHtml)
@@ -265,6 +260,25 @@ class WebContentParser {
         // Simplified implementation for HTML pages
         // In a real app, you would use a proper HTML parser
         throw ParserError.unsupportedFormat
+    }
+
+    // Helper method to remove CDATA tags
+    private func removeCDATATags(from text: String) -> String {
+        let cdataPattern = "<!\\[CDATA\\[(.*?)\\]\\]>"
+
+        // Try to use regex to extract content from CDATA sections
+        if let cdataRegex = try? NSRegularExpression(pattern: cdataPattern, options: [.dotMatchesLineSeparators]) {
+            let cdataMatches = cdataRegex.matches(in: text, range: NSRange(text.startIndex..., in: text))
+
+            if let cdataMatch = cdataMatches.first,
+               let cdataRange = Range(cdataMatch.range(at: 1), in: text) {
+                return String(text[cdataRange])
+            }
+        }
+
+        // If no CDATA section found or regex fails, try simple string replacement
+        return text.replacingOccurrences(of: "<![CDATA[", with: "")
+                  .replacingOccurrences(of: "]]>", with: "")
     }
 
     // Helper method to decode HTML entities
