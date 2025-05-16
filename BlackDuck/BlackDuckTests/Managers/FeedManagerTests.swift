@@ -31,12 +31,11 @@ final class FeedManagerTests: XCTestCase {
     func testAddFeed() async throws {
         // Arrange
         let initialCount = feedManager.feeds.count
-        let testURL = URL(string: "https://example.com/feed")!
 
-        // Create a mock feed to be returned by the parser
-        // In a real test, we would mock the WebContentParser to return this feed
+        // In a real test, we would use this URL and mock the WebContentParser
         // For now, we'll just comment it out since we're not using it
         /*
+        let testURL = URL(string: "https://example.com/feed")!
         let mockFeed = Feed(
             url: testURL,
             title: "Test Feed",
