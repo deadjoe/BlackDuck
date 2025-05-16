@@ -286,8 +286,8 @@ class WebContentParser {
             "&ndash;": "–",
             "&lsquo;": "'",
             "&rsquo;": "'",
-            "&ldquo;": """,
-            "&rdquo;": """,
+            "&ldquo;": "\u{201C}",
+            "&rdquo;": "\u{201D}",
             "&bull;": "•",
             "&hellip;": "…"
         ]

@@ -8,15 +8,16 @@ struct HTMLContentView: NSViewRepresentable {
     func makeNSView(context: Context) -> WKWebView {
         // Create a configuration for the WebView
         let configuration = WKWebViewConfiguration()
-        let preferences = WKPreferences()
-        preferences.javaScriptEnabled = true
-        preferences.javaScriptCanOpenWindowsAutomatically = false
-        configuration.preferences = preferences
 
         // Set up webpage preferences
         let webpagePreferences = WKWebpagePreferences()
         webpagePreferences.allowsContentJavaScript = true
         configuration.defaultWebpagePreferences = webpagePreferences
+
+        // Set up preferences (using modern API)
+        let preferences = WKPreferences()
+        preferences.javaScriptCanOpenWindowsAutomatically = false
+        configuration.preferences = preferences
 
         // Create the WebView with the configuration
         let webView = WKWebView(frame: .zero, configuration: configuration)
