@@ -7,8 +7,15 @@ struct ContentView: View {
     @State private var searchText = ""
     @State private var isAddingFeed = false
     @State private var newFeedURL = ""
-    
+
     var body: some View {
+        // Setup notification observers for feed item actions
+        .onAppear {
+            setupNotificationObservers()
+        }
+        .onDisappear {
+            removeNotificationObservers()
+        }
         NavigationSplitView {
             SidebarView(selectedFeed: $selectedFeed)
                 .environmentObject(feedManager)
@@ -20,7 +27,7 @@ struct ContentView: View {
                             Label("Add Feed", systemImage: "plus")
                         }
                     }
-                    
+
                     ToolbarItem {
                         Button(action: {
                             Task {
@@ -54,10 +61,10 @@ struct ContentView: View {
                 .environmentObject(feedManager)
         }
     }
-    
+
     private var filteredItems: [FeedItem] {
         guard let feed = selectedFeed else { return [] }
-        
+
         if searchText.isEmpty {
             return feed.items
         } else {
@@ -75,26 +82,26 @@ struct AddFeedView: View {
     @State private var url = ""
     @State private var isLoading = false
     @State private var errorMessage: String?
-    
+
     var body: some View {
         VStack(spacing: 20) {
             Text("Add New Feed")
                 .font(.headline)
-            
+
             TextField("Feed URL", text: $url)
                 .textFieldStyle(.roundedBorder)
-            
+
             if let errorMessage = errorMessage {
                 Text(errorMessage)
                     .foregroundColor(.red)
                     .font(.caption)
             }
-            
+
             HStack {
                 Button("Cancel") {
                     isPresented = false
                 }
-                
+
                 Button("Add") {
                     addFeed()
                 }
@@ -111,16 +118,16 @@ struct AddFeedView: View {
             }
         }
     }
-    
+
     private func addFeed() {
         guard let url = URL(string: url) else {
             errorMessage = "Invalid URL"
             return
         }
-        
+
         isLoading = true
         errorMessage = nil
-        
+
         Task {
             do {
                 try await feedManager.addFeed(url: url)
