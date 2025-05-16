@@ -128,14 +128,39 @@ class FeedManager: ObservableObject {
         saveFeedsToDisk()
     }
 
-    func toggleStarred(item: FeedItem) {
-        guard let feedIndex = feeds.firstIndex(where: { $0.id == item.feedID }),
-              let itemIndex = feeds[feedIndex].items.firstIndex(where: { $0.id == item.id }) else {
-            return
+    func toggleStarred(item: FeedItem) -> FeedItem? {
+        print("FeedManager - toggleStarred - item ID: \(item.id), title: \(item.title)")
+
+        // 查找特定文章
+        for (feedIndex, feed) in feeds.enumerated() {
+            if feed.id == item.feedID {
+                print("Found matching feed: \(feed.title)")
+
+                if let itemIndex = feed.items.firstIndex(where: { $0.id == item.id }) {
+                    print("Found matching item at index: \(itemIndex)")
+
+                    // 切换特定文章的星标状态
+                    let currentStarred = feeds[feedIndex].items[itemIndex].isStarred
+                    feeds[feedIndex].items[itemIndex].isStarred.toggle()
+
+                    print("Toggled star status from \(currentStarred) to \(!currentStarred)")
+
+                    // 发送 objectWillChange 通知，通知 SwiftUI 更新视图
+                    self.objectWillChange.send()
+
+                    // 保存更改到磁盘
+                    saveFeedsToDisk()
+
+                    // 返回更新后的 FeedItem
+                    return feeds[feedIndex].items[itemIndex]
+                } else {
+                    print("Item not found in feed: \(item.id)")
+                }
+            }
         }
 
-        feeds[feedIndex].items[itemIndex].isStarred.toggle()
-        saveFeedsToDisk()
+        print("Feed not found for item: \(item.id)")
+        return nil
     }
 
     func markAllAsRead(in feed: Feed) {

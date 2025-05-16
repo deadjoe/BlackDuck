@@ -1,8 +1,51 @@
 import SwiftUI
+import Foundation
+
+enum SmartFeedType: String, Hashable, Identifiable, CaseIterable {
+    case today
+    case unread
+    case starred
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .today:
+            return "Today"
+        case .unread:
+            return "Unread"
+        case .starred:
+            return "Starred"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .today:
+            return "calendar"
+        case .unread:
+            return "circle"
+        case .starred:
+            return "star"
+        }
+    }
+
+    func filter(_ item: FeedItem) -> Bool {
+        switch self {
+        case .today:
+            return item.isToday
+        case .unread:
+            return !item.isRead
+        case .starred:
+            return item.isStarred
+        }
+    }
+}
 
 struct ContentView: View {
     @EnvironmentObject var feedManager: FeedManager
     @State private var selectedFeed: Feed?
+    @State private var selectedSmartFeed: SmartFeedType?
     @State private var selectedItem: FeedItem?
     @State private var searchText = ""
     @State private var isAddingFeed = false
@@ -10,7 +53,7 @@ struct ContentView: View {
 
     var body: some View {
         NavigationSplitView {
-            SidebarView(selectedFeed: $selectedFeed)
+            SidebarView(selectedFeed: $selectedFeed, selectedSmartFeed: $selectedSmartFeed)
                 .environmentObject(feedManager)
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
@@ -32,15 +75,34 @@ struct ContentView: View {
                     }
                 }
         } content: {
-            if let feed = selectedFeed {
-                List(filteredItems, selection: $selectedItem) { item in
-                    FeedItemView(item: item)
-                        .tag(item)
+            NavigationStack {
+                if let feed = selectedFeed {
+                    // Regular feed view
+                    List {
+                        ForEach(filteredFeedItems(feed)) { item in
+                            NavigationLink(destination: DetailView(item: item)) {
+                                FeedItemView(item: item)
+                            }
+                            .tag(item)
+                        }
+                    }
+                    .searchable(text: $searchText, prompt: "Search in \(feed.title)")
+                    .navigationTitle(feed.title)
+                } else if let smartFeed = selectedSmartFeed {
+                    // Smart feed view
+                    List {
+                        ForEach(filteredSmartFeedItems(smartFeed)) { item in
+                            NavigationLink(destination: DetailView(item: item)) {
+                                FeedItemView(item: item)
+                            }
+                            .tag(item)
+                        }
+                    }
+                    .searchable(text: $searchText, prompt: "Search in \(smartFeed.title)")
+                    .navigationTitle(smartFeed.title)
+                } else {
+                    ContentUnavailableView("Select a Feed", systemImage: "list.bullet")
                 }
-                .searchable(text: $searchText, prompt: "Search in \(feed.title)")
-                .navigationTitle(feed.title)
-            } else {
-                ContentUnavailableView("Select a Feed", systemImage: "list.bullet")
             }
         } detail: {
             if let item = selectedItem {
@@ -82,6 +144,17 @@ struct ContentView: View {
                 toggleStarredStatus(item: item)
             }
         }
+
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("RefreshSmartFeed"),
+            object: nil,
+            queue: .main
+        ) { _ in
+            // 如果当前选中的是 Starred 智能文件夹，则刷新视图
+            if selectedSmartFeed == .starred {
+                refreshSmartFeedView()
+            }
+        }
     }
 
     private func removeNotificationObservers() {
@@ -94,6 +167,12 @@ struct ContentView: View {
         NotificationCenter.default.removeObserver(
             self,
             name: NSNotification.Name("ToggleStarredStatus"),
+            object: nil
+        )
+
+        NotificationCenter.default.removeObserver(
+            self,
+            name: NSNotification.Name("RefreshSmartFeed"),
             object: nil
         )
     }
@@ -109,18 +188,51 @@ struct ContentView: View {
     }
 
     private func toggleStarredStatus(item: FeedItem) {
-        feedManager.toggleStarred(item: item)
+        // 更新 FeedManager 中的状态
+        if feedManager.toggleStarred(item: item) != nil && selectedSmartFeed == .starred {
+            // 如果当前选中的是 Starred 智能文件夹，则刷新视图
+            refreshSmartFeedView()
+        }
     }
 
-    private var filteredItems: [FeedItem] {
-        guard let feed = selectedFeed else { return [] }
+    private func refreshSmartFeedView() {
+        // 强制视图刷新
+        let temp = selectedSmartFeed
+        selectedSmartFeed = nil
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.selectedSmartFeed = temp
+        }
+    }
 
+    private func filteredFeedItems(_ feed: Feed) -> [FeedItem] {
         if searchText.isEmpty {
             return feed.items
         } else {
             return feed.items.filter { item in
                 item.title.localizedCaseInsensitiveContains(searchText) ||
                 item.description.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+    }
+
+    private func filteredSmartFeedItems(_ smartFeed: SmartFeedType) -> [FeedItem] {
+        // 从所有 feeds 中获取所有文章
+        let allItems = feedManager.feeds.flatMap { feed in
+            // 对于每个 feed，获取其中的所有文章，并应用 smartFeed 的过滤器
+            return feed.items.filter { item in
+                return smartFeed.filter(item)
+            }
+        }
+
+        // 如果搜索文本为空，则返回所有过滤后的文章
+        if searchText.isEmpty {
+            return allItems
+        } else {
+            // 否则，进一步过滤出包含搜索文本的文章
+            return allItems.filter { item in
+                item.title.localizedCaseInsensitiveContains(searchText) ||
+                item.description.localizedCaseInsensitiveContains(searchText) ||
+                item.content.localizedCaseInsensitiveContains(searchText)
             }
         }
     }

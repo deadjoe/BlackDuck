@@ -264,19 +264,33 @@ class WebContentParser {
 
     // Helper method to remove CDATA tags
     private func removeCDATATags(from text: String) -> String {
-        let cdataPattern = "<!\\[CDATA\\[(.*?)\\]\\]>"
-
-        // Try to use regex to extract content from CDATA sections
-        if let cdataRegex = try? NSRegularExpression(pattern: cdataPattern, options: [.dotMatchesLineSeparators]) {
-            let cdataMatches = cdataRegex.matches(in: text, range: NSRange(text.startIndex..., in: text))
-
-            if let cdataMatch = cdataMatches.first,
-               let cdataRange = Range(cdataMatch.range(at: 1), in: text) {
-                return String(text[cdataRange])
-            }
+        // Check if the text contains CDATA sections
+        if !text.contains("<![CDATA[") {
+            return text
         }
 
-        // If no CDATA section found or regex fails, try simple string replacement
+        let cdataPattern = "<!\\[CDATA\\[(.*?)\\]\\]>"
+        var processedText = text
+
+        // Try to use regex to extract and replace all CDATA sections
+        if let cdataRegex = try? NSRegularExpression(pattern: cdataPattern, options: [.dotMatchesLineSeparators]) {
+            let nsRange = NSRange(processedText.startIndex..., in: processedText)
+            let matches = cdataRegex.matches(in: processedText, range: nsRange)
+
+            // Process matches in reverse order to avoid index issues when replacing
+            for match in matches.reversed() {
+                if let matchRange = Range(match.range, in: processedText),
+                   let contentRange = Range(match.range(at: 1), in: processedText) {
+                    let cdataContent = String(processedText[contentRange])
+                    processedText = processedText.replacingCharacters(in: matchRange, with: cdataContent)
+                }
+            }
+
+            return processedText
+        }
+
+        // If regex approach fails, fall back to simple string replacement
+        // This is less accurate but provides a fallback
         return text.replacingOccurrences(of: "<![CDATA[", with: "")
                   .replacingOccurrences(of: "]]>", with: "")
     }
