@@ -52,7 +52,7 @@ class WebContentParser {
         }
     }
 
-    private func parseRSSFeed(data: Data, sourceURL: URL) throws -> Feed {
+    internal func parseRSSFeed(data: Data, sourceURL: URL) throws -> Feed {
         // This is a simplified implementation. In a real app, you would use a proper XML parser
         guard let xmlString = String(data: data, encoding: .utf8) else {
             throw ParserError.parsingError("Could not convert data to string")
@@ -240,18 +240,18 @@ class WebContentParser {
         )
     }
 
-    private func parseAtomFeed(data: Data, sourceURL: URL) throws -> Feed {
+    internal func parseAtomFeed(data: Data, sourceURL: URL) throws -> Feed {
         // Simplified implementation for Atom feeds
         // In a real app, you would use a proper XML parser
         throw ParserError.unsupportedFormat
     }
 
-    private func parseJSONFeed(data: Data, sourceURL: URL) throws -> Feed {
+    internal func parseJSONFeed(data: Data, sourceURL: URL) throws -> Feed {
         // Simplified implementation for JSON feeds
         throw ParserError.unsupportedFormat
     }
 
-    private func parseWebPage(data: Data, sourceURL: URL) throws -> Feed {
+    internal func parseWebPage(data: Data, sourceURL: URL) throws -> Feed {
         // Simplified implementation for HTML pages
         // In a real app, you would use a proper HTML parser
         throw ParserError.unsupportedFormat
