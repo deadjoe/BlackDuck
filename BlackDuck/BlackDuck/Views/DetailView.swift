@@ -147,15 +147,35 @@ struct WebViewContainer: NSViewRepresentable {
     let url: URL?
 
     func makeNSView(context: Context) -> WKWebView {
-        let webView = WKWebView()
+        // Create a configuration for the WebView
+        let configuration = WKWebViewConfiguration()
+        let preferences = WKPreferences()
+        preferences.javaScriptEnabled = true
+        preferences.javaScriptCanOpenWindowsAutomatically = false
+        configuration.preferences = preferences
+
+        // Set up webpage preferences
+        let webpagePreferences = WKWebpagePreferences()
+        webpagePreferences.allowsContentJavaScript = true
+        configuration.defaultWebpagePreferences = webpagePreferences
+
+        // Create the WebView with the configuration
+        let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
+
+        // Disable process suspension to prevent the errors
+        if #available(macOS 12.0, *) {
+            webView.isInspectable = true
+        }
+
         return webView
     }
 
     func updateNSView(_ webView: WKWebView, context: Context) {
-        if let url = url {
+        if let url = url, context.coordinator.lastLoadedURL != url {
             let request = URLRequest(url: url)
             webView.load(request)
+            context.coordinator.lastLoadedURL = url
         }
     }
 
@@ -164,8 +184,29 @@ struct WebViewContainer: NSViewRepresentable {
     }
 
     class Coordinator: NSObject, WKNavigationDelegate {
+        var lastLoadedURL: URL?
+
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            // Handle navigation completion if needed
+            // Handle successful navigation if needed
+            print("WebView successfully loaded URL")
+        }
+
+        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+            // Handle navigation failure
+            print("WebView navigation failed: \(error.localizedDescription)")
+        }
+
+        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+            // Handle provisional navigation failure
+            // Ignore error code -999 which is a common cancellation error
+            if (error as NSError).code != -999 {
+                print("WebView provisional navigation failed: \(error.localizedDescription)")
+            }
+        }
+
+        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            // Allow all navigation actions within the WebView
+            decisionHandler(.allow)
         }
     }
 }
