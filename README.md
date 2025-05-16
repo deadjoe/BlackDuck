@@ -1,6 +1,5 @@
 <div align="center">
   <img src="blackduck.png" width="128" height="128" alt="BlackDuck Logo" />
-  <h1>BlackDuck</h1>
 </div>
 
 <p align="center">
