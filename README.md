@@ -2,6 +2,8 @@
 
 BlackDuck 是一个现代化的 macOS 应用程序，使用 SwiftUI 构建，用于聚合和显示来自各种网站和社交平台的内容。它提供了一个简洁、直观的界面，让您可以在一个地方查看和分析来自多个来源的内容。
 
+![BlackDuck](blackduck.png)
+
 ![BlackDuck Screenshot](screenshots/main.png)
 
 ## 功能特点
