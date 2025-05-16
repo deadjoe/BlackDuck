@@ -1,8 +1,16 @@
-# BlackDuck
+<div align="center">
+  <img src="blackduck.png" width="128" height="128" alt="BlackDuck Logo" />
+  <h1>BlackDuck</h1>
+</div>
+
+<p align="center">
+  <a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-5.7+-orange.svg" alt="Swift Version"></a>
+  <a href="https://developer.apple.com/macos/"><img src="https://img.shields.io/badge/Platform-macOS%2012.0+-blue.svg" alt="Platform"></a>
+  <a href="https://github.com/deadjoe/BlackDuck/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"></a>
+  <a href="https://github.com/deadjoe/BlackDuck/releases"><img src="https://img.shields.io/badge/Version-1.0.0-red.svg" alt="Version"></a>
+</p>
 
 BlackDuck 是一个现代化的 macOS 应用程序，使用 SwiftUI 构建，用于聚合和显示来自各种网站和社交平台的内容。它提供了一个简洁、直观的界面，让您可以在一个地方查看和分析来自多个来源的内容。
-
-![BlackDuck](blackduck.png)
 
 ![BlackDuck Screenshot](screenshots/main.png)
 
