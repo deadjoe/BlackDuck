@@ -81,11 +81,19 @@ struct FeedItemView: View {
             }
 
             Button {
+                print("FeedItemView - Toggle starred - item ID: \(item.id), title: \(item.title)")
+
                 // Toggle starred status
-                feedManager.toggleStarred(item: item)
+                let _ = feedManager.toggleStarred(item: item)
             } label: {
-                Label(item.isStarred ? "Remove Star" : "Star",
-                      systemImage: item.isStarred ? "star.slash" : "star")
+                // 从 FeedManager 中获取最新状态
+                let isStarred = feedManager.feeds
+                    .first(where: { $0.id == item.feedID })?
+                    .items.first(where: { $0.id == item.id })?
+                    .isStarred ?? item.isStarred
+
+                Label(isStarred ? "Remove Star" : "Star",
+                      systemImage: isStarred ? "star.slash" : "star")
             }
 
             Divider()

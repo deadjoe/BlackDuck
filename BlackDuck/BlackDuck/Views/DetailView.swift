@@ -4,7 +4,13 @@ import WebKit
 struct DetailView: View {
     let item: FeedItem
     @State private var isShowingOriginalContent = false
+    @State private var isStarred: Bool
     @EnvironmentObject var feedManager: FeedManager
+
+    init(item: FeedItem) {
+        self.item = item
+        self._isStarred = State(initialValue: item.isStarred)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -20,8 +26,8 @@ struct DetailView: View {
                     Button {
                         toggleStarred()
                     } label: {
-                        Image(systemName: item.isStarred ? "star.fill" : "star")
-                            .foregroundColor(item.isStarred ? .yellow : .gray)
+                        Image(systemName: isStarred ? "star.fill" : "star")
+                            .foregroundColor(isStarred ? .yellow : .gray)
                     }
                     .buttonStyle(.plain)
                 }
@@ -129,7 +135,14 @@ struct DetailView: View {
     }
 
     private func toggleStarred() {
-        feedManager.toggleStarred(item: item)
+        print("DetailView - toggleStarred - item ID: \(item.id), title: \(item.title)")
+
+        // 更新 FeedManager 中的状态，并获取更新后的 FeedItem
+        if let updatedItem = feedManager.toggleStarred(item: item) {
+            // 更新本地状态
+            isStarred = updatedItem.isStarred
+            print("DetailView - Updated isStarred to: \(isStarred)")
+        }
     }
 
     private func shareItem() {
