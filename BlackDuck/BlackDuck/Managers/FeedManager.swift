@@ -141,15 +141,21 @@ class FeedManager: ObservableObject {
 
                     // 切换特定文章的星标状态
                     let currentStarred = feeds[feedIndex].items[itemIndex].isStarred
-                    feeds[feedIndex].items[itemIndex].isStarred.toggle()
 
-                    print("Toggled star status from \(currentStarred) to \(!currentStarred)")
+                    // 创建更新后的 item
+                    var updatedItem = feeds[feedIndex].items[itemIndex]
+                    updatedItem.isStarred.toggle()
+
+                    // 更新数组中的 item
+                    feeds[feedIndex].items[itemIndex] = updatedItem
+
+                    print("Toggled star status from \(currentStarred) to \(updatedItem.isStarred)")
 
                     // 保存更改到磁盘
                     saveFeedsToDisk()
 
                     // 返回更新后的 FeedItem
-                    return feeds[feedIndex].items[itemIndex]
+                    return updatedItem
                 } else {
                     print("Item not found in feed: \(item.id)")
                 }

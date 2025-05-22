@@ -54,11 +54,23 @@ struct FeedItemView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
 
-                        if item.isStarred {
-                            Image(systemName: "star.fill")
-                                .foregroundColor(.yellow)
+                        // 可点击的星标按钮
+                        Button {
+                            print("FeedItemView - Star button clicked - item ID: \(item.id)")
+                            let _ = feedManager.toggleStarred(item: item)
+                        } label: {
+                            // 从 FeedManager 中获取最新状态
+                            let currentItem = feedManager.feeds
+                                .first(where: { $0.id == item.feedID })?
+                                .items.first(where: { $0.id == item.id })
+                            let isStarred = currentItem?.isStarred ?? item.isStarred
+
+                            Image(systemName: isStarred ? "star.fill" : "star")
+                                .foregroundColor(isStarred ? .yellow : .gray)
                                 .font(.caption)
                         }
+                        .buttonStyle(.plain)
+                        .help("Toggle starred status")
                     }
                 }
             }
