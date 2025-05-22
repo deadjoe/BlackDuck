@@ -4,12 +4,17 @@ import WebKit
 struct DetailView: View {
     let item: FeedItem
     @State private var isShowingOriginalContent = false
-    @State private var isStarred: Bool
     @EnvironmentObject var feedManager: FeedManager
 
-    init(item: FeedItem) {
-        self.item = item
-        self._isStarred = State(initialValue: item.isStarred)
+    // 计算属性，从 FeedManager 中获取最新的星标状态
+    private var currentItem: FeedItem? {
+        feedManager.feeds
+            .first(where: { $0.id == item.feedID })?
+            .items.first(where: { $0.id == item.id })
+    }
+
+    private var isStarred: Bool {
+        currentItem?.isStarred ?? item.isStarred
     }
 
     var body: some View {
@@ -137,11 +142,11 @@ struct DetailView: View {
     private func toggleStarred() {
         print("DetailView - toggleStarred - item ID: \(item.id), title: \(item.title)")
 
-        // 更新 FeedManager 中的状态，并获取更新后的 FeedItem
+        // 更新 FeedManager 中的状态
         if let updatedItem = feedManager.toggleStarred(item: item) {
-            // 更新本地状态
-            isStarred = updatedItem.isStarred
-            print("DetailView - Updated isStarred to: \(isStarred)")
+            print("DetailView - Star toggled successfully, new state: \(updatedItem.isStarred)")
+        } else {
+            print("DetailView - Failed to toggle star")
         }
     }
 

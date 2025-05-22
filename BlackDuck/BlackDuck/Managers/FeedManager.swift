@@ -145,9 +145,6 @@ class FeedManager: ObservableObject {
 
                     print("Toggled star status from \(currentStarred) to \(!currentStarred)")
 
-                    // 发送 objectWillChange 通知，通知 SwiftUI 更新视图
-                    self.objectWillChange.send()
-
                     // 保存更改到磁盘
                     saveFeedsToDisk()
 

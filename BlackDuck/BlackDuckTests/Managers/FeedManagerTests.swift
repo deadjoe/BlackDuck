@@ -141,16 +141,68 @@ final class FeedManagerTests: XCTestCase {
         feedManager.feeds = [feed]
 
         // Act
-        feedManager.toggleStarred(item: item)
+        let updatedItem1 = feedManager.toggleStarred(item: item)
 
         // Assert
+        XCTAssertNotNil(updatedItem1, "toggleStarred should return updated item")
         XCTAssertTrue(feedManager.feeds[0].items[0].isStarred)
+        XCTAssertTrue(updatedItem1!.isStarred)
 
         // Toggle again
-        feedManager.toggleStarred(item: item)
+        let updatedItem2 = feedManager.toggleStarred(item: item)
 
         // Assert
+        XCTAssertNotNil(updatedItem2, "toggleStarred should return updated item")
         XCTAssertFalse(feedManager.feeds[0].items[0].isStarred)
+        XCTAssertFalse(updatedItem2!.isStarred)
+    }
+
+    func testToggleStarredWithMultipleItems() {
+        // Arrange
+        let feedID = UUID()
+        let item1 = FeedItem(
+            feedID: feedID,
+            title: "Test Item 1",
+            description: "Description 1",
+            content: "Content 1",
+            publishDate: Date(),
+            isStarred: false
+        )
+        let item2 = FeedItem(
+            feedID: feedID,
+            title: "Test Item 2",
+            description: "Description 2",
+            content: "Content 2",
+            publishDate: Date(),
+            isStarred: true
+        )
+
+        var feed = Feed(
+            url: URL(string: "https://example.com/feed")!,
+            title: "Test Feed",
+            description: "Test Description",
+            items: [item1, item2],
+            lastUpdated: Date()
+        )
+        feed.id = feedID
+
+        feedManager.feeds = [feed]
+
+        // Act - Toggle first item (false -> true)
+        let updatedItem1 = feedManager.toggleStarred(item: item1)
+
+        // Assert
+        XCTAssertNotNil(updatedItem1)
+        XCTAssertTrue(feedManager.feeds[0].items[0].isStarred)
+        XCTAssertTrue(feedManager.feeds[0].items[1].isStarred) // Second item should remain starred
+
+        // Act - Toggle second item (true -> false)
+        let updatedItem2 = feedManager.toggleStarred(item: item2)
+
+        // Assert
+        XCTAssertNotNil(updatedItem2)
+        XCTAssertTrue(feedManager.feeds[0].items[0].isStarred) // First item should remain starred
+        XCTAssertFalse(feedManager.feeds[0].items[1].isStarred)
     }
 
     func testMarkAllAsRead() {

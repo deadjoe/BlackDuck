@@ -83,8 +83,12 @@ struct FeedItemView: View {
             Button {
                 print("FeedItemView - Toggle starred - item ID: \(item.id), title: \(item.title)")
 
-                // Toggle starred status
-                let _ = feedManager.toggleStarred(item: item)
+                // Toggle starred status and force UI update
+                if let updatedItem = feedManager.toggleStarred(item: item) {
+                    print("FeedItemView - Star toggled successfully, new state: \(updatedItem.isStarred)")
+                } else {
+                    print("FeedItemView - Failed to toggle star")
+                }
             } label: {
                 // 从 FeedManager 中获取最新状态
                 let isStarred = feedManager.feeds
